@@ -3,8 +3,8 @@
 - hosts: localhost
   gather_facts: no
   tasks:
-  - include_vars: playbooks/aws/openshift-cluster/vars.yml
-  - include_vars: playbooks/aws/openshift-cluster/cluster_hosts.yml
+  - include_vars: openshift-ansible/playbooks/aws/openshift-cluster/vars.yml
+  - include_vars: openshift-ansible/playbooks/aws/openshift-cluster/cluster_hosts.yml
   - add_host:
       name: "{{ item }}"
       groups: l_oo_all_hosts
@@ -13,10 +13,10 @@
 - hosts: l_oo_all_hosts
   gather_facts: no
   tasks:
-  - include_vars: playbooks/aws/openshift-cluster/vars.yml
-  - include_vars: playbooks/aws/openshift-cluster/cluster_hosts.yml
+  - include_vars: openshift-ansible/playbooks/aws/openshift-cluster/vars.yml
+  - include_vars: openshift-ansible/playbooks/aws/openshift-cluster/cluster_hosts.yml
 
-- include: playbooks/common/openshift-cluster/evaluate_groups.yml
+- include: openshift-ansible/playbooks/common/openshift-cluster/evaluate_groups.yml
 
 - hosts: l_oo_all_hosts
   roles:
@@ -34,4 +34,4 @@
           schedulable: "{{ openshift_schedulable | default(openshift_scheduleable) | default(None) }}"
           labels: "{{ lookup('oo_option', 'openshift_node_labels') | default( openshift_node_labels | default(none), true) }}"
 
-- include: playbooks/aws/openshift-cluster/config.yml
+- include: openshift-ansible/playbooks/aws/openshift-cluster/config.yml
