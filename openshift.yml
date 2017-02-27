@@ -1,0 +1,37 @@
+---
+
+- hosts: localhost
+  gather_facts: no
+  tasks:
+  - include_vars: playbooks/aws/openshift-cluster/vars.yml
+  - include_vars: playbooks/aws/openshift-cluster/cluster_hosts.yml
+  - add_host:
+      name: "{{ item }}"
+      groups: l_oo_all_hosts
+    with_items: "{{ g_all_hosts | default([]) }}"
+
+- hosts: l_oo_all_hosts
+  gather_facts: no
+  tasks:
+  - include_vars: playbooks/aws/openshift-cluster/vars.yml
+  - include_vars: playbooks/aws/openshift-cluster/cluster_hosts.yml
+
+- include: playbooks/common/openshift-cluster/evaluate_groups.yml
+
+- hosts: l_oo_all_hosts
+  roles:
+  - openshift_facts
+  tasks:
+  - openshift_facts:
+      role: "{{ item.role }}"
+      local_facts: "{{ item.local_facts }}"
+    with_items:
+      - role: common
+        local_facts:
+          is_containerized: "{{ containerized }}"
+      - role: node
+        local_facts:
+          schedulable: "{{ openshift_schedulable | default(openshift_scheduleable) | default(None) }}"
+          labels: "{{ lookup('oo_option', 'openshift_node_labels') | default( openshift_node_labels | default(none), true) }}"
+
+- include: playbooks/aws/openshift-cluster/config.yml
