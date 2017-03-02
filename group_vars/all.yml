@@ -38,12 +38,12 @@ openshift_master_session_max_seconds: 3600
 openshift_master_dynamic_provisioning_enabled: true
 openshift_use_dnsmasq: true
 
-openshift_cloudprovider_kind: aws
-openshift_cloudprovider_aws_access_key: "{{ aws_access_key }}"
-openshift_cloudprovider_aws_secret_key: "{{ aws_secret_key }}"
+# openshift_cloudprovider_kind: aws
+# openshift_cloudprovider_aws_access_key: "{{ aws_access_key }}"
+# openshift_cloudprovider_aws_secret_key: "{{ aws_secret_key }}"
 
-openshift_hosted_metrics_deploy: true
-openshift_hosted_metrics_storage_kind: dynamic
+openshift_hosted_metrics_deploy: false
+openshift_hosted_logging_deploy: false
 
 openshift_hosted_manage_registry: true
 openshift_hosted_registry_storage_kind: object
@@ -57,13 +57,6 @@ openshift_hosted_registry_storage_s3_rootdirectory: /registry
 openshift_hosted_registry_pullthrough: true
 openshift_hosted_registry_acceptschema2: true
 openshift_hosted_registry_enforcequota: true
-
-openshift_use_fluentd: true
-openshift_hosted_logging_deploy: true
-openshift_hosted_logging_hostname: "logging.{{ openshift_domain }}"
-openshift_hosted_logging_master_public_url: "kibana.{{ openshift_domain }}"
-openshift_hosted_logging_elasticsearch_cluster_size: 3
-openshift_hosted_logging_storage_kind: dynamic
 
 openshift_examples_load_db_templates: false
 openshift_examples_load_quickstarts: false
