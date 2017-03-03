@@ -9,11 +9,11 @@ openshift_use_openshift_sdn: true
 os_sdn_network_plugin_name: 'redhat/openshift-ovs-multitenant'
 docker_upgrade: true
 
-cli_ec2_region: "{{ hostvars[inventory_hostname]['ec2_tag_region'] }}"
-openshift_node_labels:
-  region: "{{ hostvars[inventory_hostname]['ec2_tag_region'] }}"
-  type: "{{ hostvars[inventory_hostname]['ec2_tag_sub-host-type'] }}"
-  svc: "{{ hostvars[inventory_hostname]['ec2_tag_svc'] }}"
+# cli_ec2_region: "{{ hostvars[inventory_hostname]['ec2_tag_region'] }}"
+# openshift_node_labels:
+#   region: "{{ hostvars[inventory_hostname]['ec2_tag_region'] }}"
+#   type: "{{ hostvars[inventory_hostname]['ec2_tag_sub-host-type'] }}"
+#   svc: "{{ hostvars[inventory_hostname]['ec2_tag_svc'] }}"
 openshift_router_selector: 'svc=router'
 openshift_registry_selector: 'svc=master'
 
