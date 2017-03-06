@@ -35,3 +35,94 @@
           labels: "{{ lookup('oo_option', 'openshift_node_labels') | default( openshift_node_labels | default(none), true) }}"
 
 - include: openshift-ansible/playbooks/aws/openshift-cluster/config.yml
+
+- hosts: oo_masters_to_config
+  vars:
+    master_files:
+    - /etc/origin/master/ca.serial.txt
+    - /etc/origin/generated-configs
+    - /etc/origin/hosted
+  tasks:
+  - name: Create local temp directory for syncing master_files
+    command: mktemp -d /tmp/master_files-XXXXXXX
+    become: no
+    register: master_mktemp
+    delegate_to: localhost
+  - name: Create a gzip of master_files
+    command: >
+      tar -czvf /tmp/master_files.tgz -C / {{ item }}
+    args:
+      warn: no
+    with_flattened: "{{ master_files }}"
+    delegate_to: "{{ groups.oo_masters_to_config.0 }}"
+  - name: Retrieve master_files.tgz
+    fetch:
+      src: /tmp/master_files.tgz
+      dest: "{{ master_mktemp.stdout }}/master_files.tgz"
+      flat: yes
+      validate_checksum: yes
+    delegate_to: "{{ groups.oo_masters_to_config.0 }}"
+  - name: Copy master_files to g_master_hosts
+    copy:
+      src: "{{ master_mktemp.stdout }}/master_files.tgz"
+      dest: /tmp/master_files.tgz
+      force: yes
+  - name: Unarhive master_files
+    command: >
+      tar -xzvf /tmp/master_files.tgz -C /
+    args:
+      warn: no
+  - name: Delete temp master_files.tgz
+    file:
+      path: /tmp/master_files.tgz
+      state: absent
+  - name: Delete temp master_files.tgz
+    file:
+      path: "{{ master_mktemp.stdout }}"
+      state: absent
+    delegate_to: localhost
+
+- hosts: oo_etcd_to_config
+  vars:
+    etcd_files:
+    - /etc/etcd/ca
+    - /etc/etcd/generated_certs
+  tasks:
+  - name: Create local temp directory for syncing etcd_files
+    command: mktemp -d /tmp/etcd_files-XXXXXXX
+    become: no
+    register: etcd_mktemp
+    delegate_to: localhost
+  - name: Create a gzip of etcd_files
+    command: >
+      tar -czvf /tmp/etcd_files.tgz -C / {{ item }}
+    args:
+      warn: no
+    with_flattened: "{{ etcd_files }}"
+    delegate_to: "{{ groups.oo_etcd_to_config.0 }}"
+  - name: Retrieve etcd_files.tgz
+    fetch:
+      src: /tmp/etcd_files.tgz
+      dest: "{{ etcd_mktemp.stdout }}/etcd_files.tgz"
+      flat: yes
+      validate_checksum: yes
+    delegate_to: "{{ groups.oo_etcd_to_config.0 }}"
+  - name: Copy etcd_files to g_etcd_hosts
+    copy:
+      src: "{{ etcd_mktemp.stdout }}/etcd_files.tgz"
+      dest: /tmp/etcd_files.tgz
+      force: yes
+  - name: Unarhive etcd_files
+    command: >
+      tar -xzvf /tmp/etcd_files.tgz -C /
+    args:
+      warn: no
+  - name: Delete temp etcd_files.gz
+    file:
+      path: /tmp/etcd_files.tgz
+      state: absent
+  - name: Delete temp etcd_files.gz
+    file:
+      path: "{{ etcd_mktemp.stdout }}"
+      state: absent
+    delegate_to: localhost
