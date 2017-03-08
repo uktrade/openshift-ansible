@@ -1,7 +1,7 @@
 ---
 
-openshift_schedulable: false
 containerized: true
+etcd_is_containerized: true
 openshift_node_labels:
   region: "{{ hostvars[inventory_hostname]['ec2_tag_region'] }}"
   type: "{{ hostvars[inventory_hostname]['ec2_tag_sub-host-type'] }}"

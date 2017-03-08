@@ -9,24 +9,6 @@ openshift_use_openshift_sdn: true
 os_sdn_network_plugin_name: 'redhat/openshift-ovs-multitenant'
 docker_upgrade: true
 
-cli_ec2_region: "{{ hostvars[inventory_hostname]['ec2_tag_region'] }}"
-openshift_node_labels:
-  region: "{{ hostvars[inventory_hostname]['ec2_tag_region'] }}"
-  type: "{{ hostvars[inventory_hostname]['ec2_tag_sub-host-type'] }}"
-  svc: "{{ hostvars[inventory_hostname]['ec2_tag_svc'] }}"
-openshift_router_selector: 'svc=router'
-openshift_registry_selector: 'svc=master'
-
-openshift_master_identity_providers:
-- name: github
-  login: true
-  challenge: false
-  kind: GitHubIdentityProvider
-  client_id: "{{ github_client_id }}"
-  client_secret: "{{ github_client_secret }}"
-  organizations:
-  - "{{ github_orgs }}"
-
 openshift_master_cluster_method: native
 openshift_master_cluster_hostname: "master.{{ openshift_domain }}"
 openshift_master_cluster_public_hostname: "dashboard.{{ openshift_domain }}"
@@ -38,19 +20,23 @@ openshift_master_session_max_seconds: 3600
 openshift_master_dynamic_provisioning_enabled: true
 openshift_use_dnsmasq: true
 
+openshift_master_identity_providers:
+- name: github
+  login: true
+  challenge: false
+  kind: GitHubIdentityProvider
+  client_id: "{{ github_client_id }}"
+  client_secret: "{{ github_client_secret }}"
+  organizations:
+  - "{{ github_orgs }}"
+
 # openshift_cloudprovider_kind: aws
 # openshift_cloudprovider_aws_access_key: "{{ aws_access_key }}"
 # openshift_cloudprovider_aws_secret_key: "{{ aws_secret_key }}"
 
-openshift_hosted_metrics_deploy: true
-# openshift_hosted_metrics_storage_kind: dynamic
-openshift_hosted_metrics_storage_kind: nfs
-openshift_hosted_metrics_storage_access_modes:
-- ReadWriteOnce
-openshift_hosted_metrics_storage_nfs_directory: /exports
-openshift_hosted_metrics_storage_nfs_options: '*(rw,root_squash)'
-openshift_hosted_metrics_storage_volume_name: metrics
-openshift_hosted_metrics_storage_volume_size: 10Gi
+cli_ec2_region: "{{ hostvars[inventory_hostname]['ec2_tag_region'] }}"
+openshift_hosted_router_selector: 'svc=router'
+openshift_hosted_registry_selector: 'svc=master'
 
 openshift_hosted_manage_registry: true
 openshift_hosted_registry_storage_kind: object
@@ -65,19 +51,32 @@ openshift_hosted_registry_pullthrough: true
 openshift_hosted_registry_acceptschema2: true
 openshift_hosted_registry_enforcequota: true
 
+openshift_hosted_metrics_deploy: true
+openshift_hosted_metrics_upgrade: true
+openshift_hosted_metrics_storage_kind: nfs
+openshift_hosted_metrics_storage_host: "nas.{{ openshift_domain }}"
+openshift_hosted_metrics_storage_access_modes:
+- ReadWriteOnce
+openshift_hosted_metrics_storage_nfs_directory: /exports
+openshift_hosted_metrics_storage_nfs_options: '*(rw,root_squash)'
+openshift_hosted_metrics_storage_volume_name: metrics
+openshift_hosted_metrics_storage_volume_size: 10Gi
+
+openshift_hosted_logging_deploy: false
 openshift_use_fluentd: true
 openshift_hosted_logging_deploy: true
 openshift_hosted_logging_hostname: "logging.{{ openshift_domain }}"
 openshift_hosted_logging_master_public_url: "kibana.{{ openshift_domain }}"
 openshift_hosted_logging_elasticsearch_cluster_size: 3
-# openshift_hosted_logging_storage_kind: dynamic
 openshift_hosted_logging_storage_kind: nfs
+openshift_hosted_logging_storage_host: "nas.{{ openshift_domain }}"
 openshift_hosted_logging_storage_access_modes:
 - ReadWriteOnce
 openshift_hosted_logging_storage_nfs_directory: /exports
 openshift_hosted_logging_storage_nfs_options: '*(rw,root_squash)'
 openshift_hosted_logging_storage_volume_name: logging
 openshift_hosted_logging_storage_volume_size: 10Gi
+
 
 openshift_examples_load_db_templates: false
 openshift_examples_load_quickstarts: false
