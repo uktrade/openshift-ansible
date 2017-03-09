@@ -2,6 +2,7 @@
 
 - hosts: localhost
   gather_facts: no
+  tags: always
   tasks:
   - include_vars: openshift-ansible/playbooks/aws/openshift-cluster/vars.yml
   - include_vars: openshift-ansible/playbooks/aws/openshift-cluster/cluster_hosts.yml
@@ -12,13 +13,16 @@
 
 - hosts: l_oo_all_hosts
   gather_facts: no
+  tags: always
   tasks:
   - include_vars: openshift-ansible/playbooks/aws/openshift-cluster/vars.yml
   - include_vars: openshift-ansible/playbooks/aws/openshift-cluster/cluster_hosts.yml
 
 - include: openshift-ansible/playbooks/common/openshift-cluster/evaluate_groups.yml
+  tags: always
 
 - hosts: l_oo_all_hosts
+  tags: always
   roles:
   - openshift_facts
   tasks:
@@ -37,6 +41,7 @@
 - include: openshift-ansible/playbooks/aws/openshift-cluster/config.yml
 
 - hosts: oo_masters_to_config
+  tags: master
   vars:
     master_files:
     - /etc/origin/master/ca.serial.txt
@@ -83,6 +88,7 @@
     delegate_to: localhost
 
 - hosts: oo_etcd_to_config
+  tags: etcd
   vars:
     etcd_files:
     - /etc/etcd/ca
