@@ -52,7 +52,17 @@ openshift_hosted_registry_pullthrough: true
 openshift_hosted_registry_acceptschema2: true
 openshift_hosted_registry_enforcequota: true
 
-openshift_hosted_metrics_deploy: false
+openshift_hosted_metrics_deploy: true
+openshift_hosted_metrics_upgrade: true
+openshift_hosted_metrics_storage_kind: nfs
+openshift_hosted_metrics_storage_host: "nas.{{ openshift_domain }}"
+openshift_hosted_metrics_storage_access_modes:
+- ReadWriteOnce
+openshift_hosted_metrics_storage_nfs_directory: /exports
+openshift_hosted_metrics_storage_nfs_options: '*(rw,root_squash)'
+openshift_hosted_metrics_storage_volume_name: metrics
+openshift_hosted_metrics_storage_volume_size: 20Gi
+
 openshift_hosted_logging_deploy: false
 
 openshift_examples_load_db_templates: false
