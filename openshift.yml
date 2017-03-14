@@ -15,6 +15,12 @@
   gather_facts: no
   tags: always
   tasks:
+  - file:
+      path: /var/run/ansible-bootstrap.lock
+      owner: root
+      group: root
+      mode: 0644
+      state: touch
   - include_vars: openshift-ansible/playbooks/aws/openshift-cluster/vars.yml
   - include_vars: openshift-ansible/playbooks/aws/openshift-cluster/cluster_hosts.yml
 
@@ -132,3 +138,14 @@
       path: "{{ etcd_mktemp.stdout }}"
       state: absent
     delegate_to: localhost
+
+- hosts: l_oo_all_hosts
+  gather_facts: no
+  tags: always
+  tasks:
+  - file:
+      path: /var/run/ansible-bootstrap.lock
+      owner: root
+      group: root
+      mode: 0644
+      state: absent
