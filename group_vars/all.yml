@@ -37,6 +37,7 @@ openshift_master_identity_providers:
 
 cli_ec2_region: "{{ hostvars[inventory_hostname]['ec2_tag_region'] }}"
 openshift_hosted_router_selector: 'svc=router'
+openshift.hosted.router.selector: "{{ openshift_hosted_router_selector }}"
 openshift_hosted_registry_selector: 'svc=master'
 
 openshift_hosted_manage_registry: true
