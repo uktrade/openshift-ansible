@@ -44,6 +44,42 @@
           schedulable: "{{ openshift_schedulable | default(openshift_scheduleable) | default(None) }}"
           labels: "{{ lookup('oo_option', 'openshift_node_labels') | default( openshift_node_labels | default(none), true) }}"
 
+- hosts: oo_masters_to_config
+  tags: master
+  tasks:
+  - name: Check if master node is already configured
+    stat:
+      path: /etc/origin
+    register: prep_master
+  - file:
+      path: "{{ item }}"
+      state: directory
+      mode: 0750
+      owner: root
+      group: root
+    with_items:
+    - /etc/origin
+    - /etc/origin/master
+    when: prep_master.stat.exists == False
+  - name: Get a list of existing master configs
+    s3:
+      bucket: "datastore.{{ openshift_domain }}"
+      region: "{{ aws_region }}"
+      prefix: config/master
+      marker: config/master
+      mode: list
+    register: existing_master_config
+  - name: Download existing master configs from S3
+    s3:
+      bucket: "datastore.{{ openshift_domain }}"
+      region: "{{ aws_region }}"
+      object: "/config/master/{{ item | basename }}"
+      dest: "/etc/origin/master/{{ item | basename}}"
+      mode: get
+    with_items:
+    - "{{ existing_master_config.s3_keys }}"
+    when: prep_master.stat.exists == False
+
 - include: openshift-ansible/playbooks/aws/openshift-cluster/config.yml
 
 - hosts: oo_nodes_to_config
@@ -61,6 +97,26 @@
       {{ openshift.common.client_binary }} adm manage-node --schedulable=false --selector='svc=router'
     ignore_errors: yes
     delegate_to: "{{ groups.oo_masters_to_config.0 }}"
+
+- hosts: oo_first_master
+  tags: master
+  tasks:
+  - name: Get list of master configs
+    find:
+      paths: /etc/origin/master
+      file_type: file
+      patterns: "(.*)\\.(crt|key|txt|kubeconfig|json)"
+      use_regex: true
+    register: master_config
+  - name: Copy configs to S3 bucket
+    s3:
+      bucket: "datastore.{{ openshift_domain }}"
+      region: "{{ aws_region }}"
+      object: "/config/master/{{ item.path | basename }}"
+      src: "/etc/origin/master/{{ item.path | basename}}"
+      mode: put
+    with_items:
+    - "{{ master_config.files }}"
 
 - hosts: oo_masters_to_config
   tags: master
