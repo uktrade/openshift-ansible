@@ -44,7 +44,7 @@
           schedulable: "{{ openshift_schedulable | default(openshift_scheduleable) | default(None) }}"
           labels: "{{ lookup('oo_option', 'openshift_node_labels') | default( openshift_node_labels | default(none), true) }}"
 
-# - include: openshift-ansible/playbooks/aws/openshift-cluster/config.yml
+- include: openshift-ansible/playbooks/aws/openshift-cluster/config.yml
 
 - hosts: oo_nodes_to_config
   tasks:
