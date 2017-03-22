@@ -101,22 +101,35 @@
 - hosts: oo_first_master
   tags: master
   tasks:
-  - name: Get list of master configs
-    find:
-      paths: /etc/origin/master
-      file_type: file
-      patterns: "(.*)\\.(crt|key|txt|kubeconfig|json)"
-      use_regex: true
-    register: master_config
   - name: Copy configs to S3 bucket
     s3:
       bucket: "datastore.{{ openshift_domain }}"
       region: "{{ aws_region }}"
-      object: "/config/master/{{ item.path | basename }}"
-      src: "/etc/origin/master/{{ item.path | basename}}"
+      object: "/config/master/{{ item }}"
+      src: "/etc/origin/master/{{ item }}"
       mode: put
     with_items:
-    - "{{ master_config.files }}"
+    - ca-bundle.crt
+    - ca.crt
+    - ca.key
+    - ca.serial.txt
+    - admin.crt
+    - admin.key
+    - admin.kubeconfig
+    - master.kubelet-client.crt
+    - master.kubelet-client.key
+    - openshift-registry.crt
+    - openshift-registry.key
+    - openshift-registry.kubeconfig
+    - openshift-router.crt
+    - openshift-router.key
+    - openshift-router.kubeconfig
+    - serviceaccounts.private.key
+    - serviceaccounts.public.key
+    - master.proxy-client.crt
+    - master.proxy-client.key
+    - service-signer.crt
+    - service-signer.key
 
 - hosts: oo_masters_to_config
   tags: master
