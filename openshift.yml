@@ -44,7 +44,7 @@
           schedulable: "{{ openshift_schedulable | default(openshift_scheduleable) | default(None) }}"
           labels: "{{ lookup('oo_option', 'openshift_node_labels') | default( openshift_node_labels | default(none), true) }}"
 
-- include: openshift-ansible/playbooks/aws/openshift-cluster/config.yml
+# - include: openshift-ansible/playbooks/aws/openshift-cluster/config.yml
 
 - hosts: oo_nodes_to_config
   tasks:
@@ -77,10 +77,9 @@
     delegate_to: localhost
   - name: Create a gzip of master_files
     command: >
-      tar -czvf /tmp/master_files.tgz -C / "{{ item }}"
+      tar -czvf /tmp/master_files.tgz -C / "{{ master_files | join(" ") }}"
     args:
       warn: no
-    with_flattened: "{{ master_files }}"
     delegate_to: "{{ groups.oo_masters_to_config.0 }}"
   - name: Retrieve master_files.tgz
     fetch:
@@ -123,10 +122,9 @@
     delegate_to: localhost
   - name: Create a gzip of etcd_files
     command: >
-      tar -czvf /tmp/etcd_files.tgz -C / "{{ item }}"
+      tar -czvf /tmp/etcd_files.tgz -C / "{{ etcd_files | join(" ")  }}"
     args:
       warn: no
-    with_flattened: "{{ etcd_files }}"
     delegate_to: "{{ groups.oo_etcd_to_config.0 }}"
   - name: Retrieve etcd_files.tgz
     fetch:
