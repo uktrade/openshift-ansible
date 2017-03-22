@@ -77,7 +77,7 @@
     delegate_to: localhost
   - name: Create a gzip of master_files
     command: >
-      tar -czvf /tmp/master_files.tgz -C / {{ item }}
+      tar -czvf /tmp/master_files.tgz -C / "{{ item }}"
     args:
       warn: no
     with_flattened: "{{ master_files }}"
@@ -123,7 +123,7 @@
     delegate_to: localhost
   - name: Create a gzip of etcd_files
     command: >
-      tar -czvf /tmp/etcd_files.tgz -C / {{ item }}
+      tar -czvf /tmp/etcd_files.tgz -C / "{{ item }}"
     args:
       warn: no
     with_flattened: "{{ etcd_files }}"
