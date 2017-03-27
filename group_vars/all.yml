@@ -1,6 +1,7 @@
 ---
 
 openshift_release: "{{ openshift_release }}"
+openshift_version: "{{ openshift_release }}"
 openshift_cluster_id: "{{ cluster_id }}"
 deployment_type: origin
 
