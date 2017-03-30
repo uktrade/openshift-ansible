@@ -9,7 +9,7 @@ openshift_clock_enabled: true
 openshift_use_openshift_sdn: true
 os_sdn_network_plugin_name: 'redhat/openshift-ovs-multitenant'
 docker_upgrade: true
-os_firewall_enabled: false
+os_firewall_enabled: true
 
 openshift_master_cluster_method: native
 openshift_master_cluster_hostname: "master.{{ openshift_domain }}"
