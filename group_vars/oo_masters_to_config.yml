@@ -3,7 +3,3 @@
 # https://github.com/openshift/openshift-ansible/issues/2206
 openshift_schedulable: true
 containerized: true
-openshift_node_labels:
-  region: "{{ hostvars[inventory_hostname]['ec2_tag_region'] }}"
-  type: "{{ hostvars[inventory_hostname]['ec2_tag_sub-host-type'] }}"
-  svc: "{{ hostvars[inventory_hostname]['ec2_tag_svc'] }}"

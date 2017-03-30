@@ -39,10 +39,28 @@
       - role: common
         local_facts:
           is_containerized: "{{ containerized }}"
+          use_openshift_sdn: "{{ openshift_use_openshift_sdn }}"
+          sdn_network_plugin_name: "{{ os_sdn_network_plugin_name }}"
+          use_dnsmasq: "{{ openshift_use_dnsmasq }}"
+      - role: node
+        local_facts:
+          router_selector: "{{ openshift_hosted_router_selector }}"
+          registry_selector: "{{ openshift_hosted_registry_selector }}"
       - role: node
         local_facts:
           schedulable: "{{ openshift_schedulable | default(openshift_scheduleable) | default(None) }}"
           labels: "{{ lookup('oo_option', 'openshift_node_labels') | default( openshift_node_labels | default(none), true) }}"
+      - role: hosted
+        local_facts:
+          registry:
+            selector: "{{ openshift_hosted_registry_selector }}"
+          router:
+            selector: "{{ openshift_hosted_router_selector }}"
+          metrics:
+            selector: "{{ openshift_hosted_registry_selector }}"
+            storage_host: "nas.{{ openshift_domain }}"
+            storage:
+              host: "nas.{{ openshift_domain }}"
 
 - hosts: oo_masters_to_config
   tags: master
@@ -81,6 +99,19 @@
     when: prep_master.stat.exists == False
 
 - include: openshift-ansible/playbooks/aws/openshift-cluster/config.yml
+  vars:
+    openshift_cluster_id: "{{ cluster_id }}"
+    openshift_deployment_type: "{{ deployment_type }}"
+    openshift_master_cluster_method: "{{ openshift_master_type }}"
+    openshift_hosted_registry_selector: "{{ openshift_router_selector }}"
+    openshift_hosted_router_selector: "{{ openshift_registry_selector }}"
+    openshift_use_openshift_sdn: "{{ openshift_use_sdn }}"
+    os_sdn_network_plugin_name: "{{ openshift_sdn_network_plugin_name }}"
+    openshift_use_dnsmasq: "{{ openshift_dnsmasq }}"
+    openshift_node_labels:
+      region: "{{ hostvars[inventory_hostname]['ec2_tag_region'] }}"
+      type: "{{ hostvars[inventory_hostname]['ec2_tag_sub-host-type'] }}"
+      svc: "{{ hostvars[inventory_hostname]['ec2_tag_svc'] }}"
 
 - hosts: oo_nodes_to_config
   tasks:
