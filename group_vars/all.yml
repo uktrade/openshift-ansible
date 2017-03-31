@@ -5,19 +5,18 @@ openshift_version: "{{ openshift_release }}"
 openshift_cluster_id: "{{ cluster_id }}"
 deployment_type: origin
 
-openshift_master_type: native
-openshift_use_sdn: true
-openshift_sdn_network_plugin_name: redhat/openshift-ovs-multitenant
-openshift_router_selector: svc=router
-openshift_registry_selector: svc=master
+cli_openshift_master_cluster_method: native
+cli_use_openshift_sdn: true
+cli_sdn_network_plugin_name: redhat/openshift-ovs-multitenant
+cli_openshift_use_dnsmasq: true
 
 openshift_clock_enabled: true
-openshift_use_openshift_sdn: "{{ openshift_use_sdn }}"
-os_sdn_network_plugin_name: "{{ openshift_sdn_network_plugin_name }}"
+openshift_use_openshift_sdn: "{{ cli_use_openshift_sdn }}"
+os_sdn_network_plugin_name: "{{ cli_sdn_network_plugin_name }}"
 docker_upgrade: true
 os_firewall_enabled: true
 
-openshift_master_cluster_method: "{{ openshift_master_type }}"
+openshift_master_cluster_method: "{{ cli_openshift_master_cluster_method }}"
 openshift_master_cluster_hostname: "master.{{ openshift_domain }}"
 openshift_master_cluster_public_hostname: "dashboard.{{ openshift_domain }}"
 openshift_master_default_subdomain: "apps.{{ openshift_domain }}"
@@ -26,8 +25,7 @@ openshift_master_api_port: 443
 openshift_master_session_name: ssn
 openshift_master_session_max_seconds: 3600
 openshift_master_dynamic_provisioning_enabled: true
-openshift_dnsmasq: true
-openshift_use_dnsmasq: "{{ openshift_dnsmasq }}"
+openshift_use_dnsmasq: "{{ cli_openshift_use_dnsmasq }}"
 
 openshift_master_identity_providers:
 - name: github
@@ -44,8 +42,8 @@ openshift_master_identity_providers:
 # openshift_cloudprovider_aws_secret_key: "{{ aws_secret_key }}"
 
 cli_ec2_region: "{{ hostvars[inventory_hostname]['ec2_tag_region'] }}"
-openshift_hosted_router_selector: "{{ openshift_router_selector }}"
-openshift_hosted_registry_selector: "{{ openshift_registry_selector }}"
+openshift_hosted_router_selector: 'svc=router'
+openshift_hosted_registry_selector: 'svc=master'
 
 openshift_hosted_manage_registry: true
 openshift_hosted_registry_storage_kind: object
