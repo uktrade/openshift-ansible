@@ -112,7 +112,7 @@
       region: "{{ hostvars[inventory_hostname]['ec2_tag_region'] }}"
       type: "{{ hostvars[inventory_hostname]['ec2_tag_sub-host-type'] }}"
       svc: "{{ hostvars[inventory_hostname]['ec2_tag_svc'] }}"
-      process_type: "{{ hostvars[inventory_hostname]['ec2_tag_process-type'] }}"
+      process_type: "{{ hostvars[inventory_hostname]['ec2_tag_process-type'] | default(hostvars[inventory_hostname]['ec2_tag_svc']) }}"
 
 - hosts: oo_nodes_to_config
   tasks:
