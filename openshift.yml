@@ -147,6 +147,7 @@
       iptables -A OUTPUT -j DROP
     args:
       executable: /bin/bash
+      creates: /var/lock/openshift-iptables.lock
     register: iptables_rules
   - debug:
       var: iptables_rules.cmd
