@@ -133,11 +133,12 @@
 - hosts: tag_process-type_compute
   tasks:
   - shell: |
-      IP_WHITELIST="169.254.169.254 192.30.252.0/22 $(curl -fsSL https://api.fastly.com/public-ip-list | jq -rc '.addresses[]') $(dig +short *.apps.{{ openshift_domain }}) $(dig +short dashboard.{{ openshift_domain }}) {{ vpc_endpoint | regex_replace(',', ' ') }}"
+      IP_WHITELIST="192.30.252.0/22 $(curl -fsSL https://api.fastly.com/public-ip-list | jq -rc '.addresses[]') $(dig +short *.apps.{{ openshift_domain }}) $(dig +short dashboard.{{ openshift_domain }}) {{ vpc_endpoint | regex_replace(',', ' ') | default(null) }}"
       iptables -A OUTPUT -i lo -j ACCEPT
       iptables -A OUTPUT -d 10.0.0.0/8 -j ACCEPT
       iptables -A OUTPUT -d 172.16.0.0/12 -j ACCEPT
       iptables -A OUTPUT -d 192.168.0.0/16 -j ACCEPT
+      iptables -A OUTPUT -d 169.254.169.254 -j ACCEPT
       iptables -A OUTPUT -p udp --dport 53 -j ACCEPT
       iptables -A OUTPUT -p udp --dport 123 -j ACCEPT
       for I in $IP_WHITELIST; do
