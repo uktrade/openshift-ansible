@@ -133,7 +133,7 @@
 - hosts: tag_process-type_compute
   tasks:
   - shell: |
-      IP_WHITELIST="192.30.252.0/22 $(curl -fsSL https://api.fastly.com/public-ip-list | jq -rc '.addresses[]') $(dig +short *.apps.{{ openshift_domain }}) $(dig +short dashboard.{{ openshift_domain }}) {{ vpc_endpoint | regex_replace(',', ' ') | default(null) }}"
+      IP_WHITELIST="192.30.252.0/22 $(curl -fsSL https://api.fastly.com/public-ip-list | jq -rc '.addresses[]') $(dig +short *.apps.{{ openshift_domain }}) $(dig +short dashboard.{{ openshift_domain }}) {{ vpc_endpoint | regex_replace(',', ' ') | default(null) }} index.docker.io"
       iptables -A OUTPUT -i lo -j ACCEPT
       iptables -A OUTPUT -d 10.0.0.0/8 -j ACCEPT
       iptables -A OUTPUT -d 172.16.0.0/12 -j ACCEPT
