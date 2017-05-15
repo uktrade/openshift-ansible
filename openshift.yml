@@ -141,6 +141,7 @@
       iptables -A OUTPUT -d 169.254.169.254 -j ACCEPT
       iptables -A OUTPUT -p udp --dport 53 -j ACCEPT
       iptables -A OUTPUT -p udp --dport 123 -j ACCEPT
+      iptables -A OUTPUT -p tcp --dport 5432 -j ACCEPT
       for I in $IP_WHITELIST; do
         iptables -A OUTPUT -p tcp -d $I -m multiport --dport 80,443 -j ACCEPT
       done
