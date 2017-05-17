@@ -38,8 +38,6 @@ openshift_master_identity_providers:
   client_secret: "{{ github_client_secret }}"
   organizations:
   - "{{ github_orgs | default(null) }}"
-  teams:
-  - "{{ github_teams | default(null) }}"
 
 # openshift_cloudprovider_kind: aws
 # openshift_cloudprovider_aws_access_key: "{{ aws_access_key }}"
