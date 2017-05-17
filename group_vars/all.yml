@@ -17,6 +17,8 @@ openshift_use_openshift_sdn: "{{ cli_use_openshift_sdn }}"
 os_sdn_network_plugin_name: "{{ cli_sdn_network_plugin_name }}"
 docker_upgrade: true
 os_firewall_enabled: true
+enable_excluders: false
+etcd_is_thirdparty: true
 
 openshift_master_cluster_method: "{{ cli_openshift_master_cluster_method }}"
 openshift_master_cluster_hostname: "master.{{ openshift_domain }}"

@@ -62,6 +62,17 @@
             storage:
               host: "nas.{{ openshift_domain }}"
 
+# - hosts: oo_etcd_to_config
+#   tags: etcd
+#   tasks:
+#   - name: Touch /etc/sysconfig/etcd
+#     file:
+#       path: /etc/sysconfig/etcd
+#       state: touch
+#       mode: 0644
+#       owner: root
+#       group: root
+
 - hosts: oo_masters_to_config
   tags: master
   tasks:
