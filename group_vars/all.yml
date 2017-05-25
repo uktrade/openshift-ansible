@@ -41,9 +41,9 @@ openshift_master_identity_providers:
   organizations:
   - "{{ github_orgs | default(null) }}"
 
-openshift_cloudprovider_kind: aws
-openshift_cloudprovider_aws_access_key: "{{ aws_access_key }}"
-openshift_cloudprovider_aws_secret_key: "{{ aws_secret_key }}"
+# openshift_cloudprovider_kind: aws
+# openshift_cloudprovider_aws_access_key: "{{ aws_access_key }}"
+# openshift_cloudprovider_aws_secret_key: "{{ aws_secret_key }}"
 
 cli_ec2_region: "{{ hostvars[inventory_hostname]['ec2_tag_region'] }}"
 openshift_hosted_router_selector: 'svc=router'
