@@ -46,11 +46,11 @@ openshift_master_identity_providers:
 # openshift_cloudprovider_aws_secret_key: "{{ aws_secret_key }}"
 
 cli_ec2_region: "{{ hostvars[inventory_hostname]['ec2_tag_region'] }}"
-openshift_hosted_router_selector: {"svc": "master"}
-openshift_hosted_registry_selector: {"svc": "master"}
-openshift_metrics_hawkular_nodeselector: {"svc": "master"}
-openshift_metrics_cassandra_nodeselector: {"svc": "master"}
-openshift_metrics_heapster_nodeselector: {"svc": "master"}
+openshift_hosted_router_selector: {"svc": "infra"}
+openshift_hosted_registry_selector: {"svc": "infra"}
+openshift_metrics_hawkular_nodeselector: {"svc": "infra"}
+openshift_metrics_cassandra_nodeselector: {"svc": "infra"}
+openshift_metrics_heapster_nodeselector: {"svc": "infra"}
 
 openshift_hosted_manage_registry: true
 openshift_hosted_registry_storage_kind: object
