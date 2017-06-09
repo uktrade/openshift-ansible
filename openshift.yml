@@ -157,6 +157,8 @@
     - master.proxy-client.crt
     - master.proxy-client.key
     - openshift-master.kubeconfig
+    - registry.crt
+    - registry.key
     - serviceaccounts.private.key
     - serviceaccounts.public.key
     - service-signer.crt
