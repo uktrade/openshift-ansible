@@ -104,7 +104,7 @@
     openshift_deployment_type: "{{ deployment_type }}"
     openshift_master_cluster_method: "{{ lookup('oo_option', 'openshift_master_cluster_method') }}"
     openshift_hosted_registry_selector: "{{ openshift_hosted_selector }}"
-    openshift_hosted_router_selector: {"svc": "router"}
+    openshift_hosted_router_selector: 'svc=router'
     openshift_use_openshift_sdn: "{{ lookup('oo_option', 'use_openshift_sdn') }}"
     os_sdn_network_plugin_name: "{{ lookup('oo_option', 'sdn_network_plugin_name') }}"
     openshift_use_dnsmasq: "{{ lookup('oo_option', 'openshift_use_dnsmasq') }}"
