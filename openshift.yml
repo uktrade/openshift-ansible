@@ -121,7 +121,7 @@
         schedulable: false
     when: openshift_node_labels.svc == "master" or openshift_node_labels.svc == "router"
   - command: >
-      {{ openshift.common.client_binary }} adm manage-node --schedulable=false --selector='svc=master'
+      {{ openshift.common.client_binary }} adm manage-node --schedulable=false --selector='svc=infra'
     ignore_errors: yes
     delegate_to: "{{ groups.oo_masters_to_config.0 }}"
   - command: >
