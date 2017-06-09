@@ -140,21 +140,32 @@
       src: "/etc/origin/master/{{ item }}"
       mode: put
     with_items:
+    - admin.crt
+    - admin.key
+    - admin.kubeconfig
     - ca-bundle.crt
     - ca.crt
     - ca.key
     - ca.serial.txt
-    - admin.crt
-    - admin.key
-    - admin.kubeconfig
+    - master-config.yaml
+    - master.etcd-ca.crt
+    - master.etcd-client.crt
+    - master.etcd-client.csr
+    - master.etcd-client.key
     - master.kubelet-client.crt
     - master.kubelet-client.key
-    - serviceaccounts.private.key
-    - serviceaccounts.public.key
     - master.proxy-client.crt
     - master.proxy-client.key
+    - master.server.crt
+    - master.server.key
+    - openshift-master.crt
+    - openshift-master.key
+    - openshift-master.kubeconfig
+    - serviceaccounts.private.key
+    - serviceaccounts.public.key
     - service-signer.crt
     - service-signer.key
+    - session-secrets.yaml
 
 - hosts: oo_masters_to_config
   tags: master
