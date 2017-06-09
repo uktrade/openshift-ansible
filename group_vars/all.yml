@@ -47,14 +47,13 @@ openshift_master_identity_providers:
 
 cli_ec2_region: "{{ hostvars[inventory_hostname]['ec2_tag_region'] }}"
 openshift_hosted_selector: {"svc": "infra"}
-openshift_hosted_router_selector: "{{ openshift_hosted_selector }}"
-openshift_hosted_registry_selector: "{{ openshift_hosted_selector }}"
+openshift_hosted_router_selector: 'svc=router'
+openshift_hosted_registry_selector: 'svc=infra'
 openshift_metrics_hawkular_nodeselector: "{{ openshift_hosted_selector }}"
 openshift_metrics_cassandra_nodeselector: "{{ openshift_hosted_selector }}"
 openshift_metrics_heapster_nodeselector: "{{ openshift_hosted_selector }}"
 
 openshift_hosted_manage_registry: true
-openshift_hosted_registry_replicas: "{{ groups[g_infra_hosts] | length }}"
 openshift_hosted_registry_storage_kind: object
 openshift_hosted_registry_storage_provider: s3
 openshift_hosted_registry_storage_s3_accesskey: "{{ aws_access_key }}"
