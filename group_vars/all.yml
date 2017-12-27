@@ -1,5 +1,6 @@
 ---
 
+openshift_release: "{{ openshift_release }}"
 openshift_version: "{{ openshift_release }}"
 openshift_image_tag: "v{{ openshift_release }}"
 openshift_pkg_version: "-{{ openshift_release }}"
@@ -16,6 +17,8 @@ openshift_use_openshift_sdn: "{{ cli_use_openshift_sdn }}"
 os_sdn_network_plugin_name: "{{ cli_sdn_network_plugin_name }}"
 docker_upgrade: true
 os_firewall_enabled: true
+enable_excluders: false
+etcd_is_thirdparty: false
 
 openshift_master_cluster_method: "{{ cli_openshift_master_cluster_method }}"
 openshift_master_cluster_hostname: "master.{{ openshift_domain }}"
@@ -36,17 +39,19 @@ openshift_master_identity_providers:
   client_id: "{{ github_client_id }}"
   client_secret: "{{ github_client_secret }}"
   organizations:
-  - "{{ github_orgs }}"
+  - "{{ github_orgs | default(null) }}"
 
 # openshift_cloudprovider_kind: aws
 # openshift_cloudprovider_aws_access_key: "{{ aws_access_key }}"
 # openshift_cloudprovider_aws_secret_key: "{{ aws_secret_key }}"
 
 cli_ec2_region: "{{ hostvars[inventory_hostname]['ec2_tag_region'] }}"
+openshift_hosted_selector: {"svc": "infra"}
 openshift_hosted_router_selector: 'svc=router'
-openshift_hosted_registry_selector: 'svc=master'
-openshift_builddefaults_nodeselectors: 'svc=master'
-openshift_buildoverrides_nodeselectors: 'svc=master'
+openshift_hosted_registry_selector: 'svc=infra'
+openshift_metrics_hawkular_nodeselector: "{{ openshift_hosted_selector }}"
+openshift_metrics_cassandra_nodeselector: "{{ openshift_hosted_selector }}"
+openshift_metrics_heapster_nodeselector: "{{ openshift_hosted_selector }}"
 
 openshift_hosted_manage_registry: true
 openshift_hosted_registry_storage_kind: object
@@ -62,6 +67,7 @@ openshift_hosted_registry_acceptschema2: true
 openshift_hosted_registry_enforcequota: true
 
 openshift_hosted_metrics_deploy: true
+openshift_hosted_metrics_deployer_version: "{{ openshift_image_tag }}"
 openshift_hosted_metrics_upgrade: true
 openshift_hosted_metrics_storage_kind: nfs
 openshift_hosted_metrics_storage_host: "nas.{{ openshift_domain }}"
