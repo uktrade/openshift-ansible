@@ -4,14 +4,36 @@
   gather_facts: no
   tags: always
   tasks:
-  - include_vars: openshift-ansible/playbooks/aws/openshift-cluster/vars.yml
-  - include_vars: openshift-ansible/playbooks/aws/openshift-cluster/cluster_hosts.yml
   - add_host:
       name: "{{ item }}"
-      groups: l_oo_all_hosts
+      groups: oo_all_hosts
     with_items: "{{ g_all_hosts | default([]) }}"
+  - add_host:
+      name: "{{ item }}"
+      groups: etcd
+    with_items: "{{ g_etcd_hosts | default([]) }}"
+  - add_host:
+      name: "{{ item }}"
+      groups: masters
+    with_items: "{{ g_master_hosts | default([]) }}"
+  - add_host:
+      name: "{{ item }}"
+      groups: nodes
+    with_items: "{{ g_node_hosts | default([]) }}"
+  - add_host:
+      name: "{{ item }}"
+      groups: nfs
+    with_items: "{{ g_nfs_hosts | default([]) }}"
+  - add_host:
+      name: "{{ item }}"
+      groups: lb
+    with_items: "{{ g_lb_hosts | default([]) }}"
+  - add_host:
+      name: "{{ item }}"
+      groups: glusterfs
+    with_items: "{{ g_glusterfs_hosts | default([]) }}"
 
-- hosts: l_oo_all_hosts
+- hosts: oo_all_hosts
   gather_facts: no
   tags: always
   tasks:
@@ -21,46 +43,21 @@
       group: root
       mode: 0644
       state: touch
-  - include_vars: openshift-ansible/playbooks/aws/openshift-cluster/vars.yml
-  - include_vars: openshift-ansible/playbooks/aws/openshift-cluster/cluster_hosts.yml
-
-- include: openshift-ansible/playbooks/common/openshift-cluster/evaluate_groups.yml
-  tags: always
-
-- hosts: l_oo_all_hosts
-  tags: always
-  roles:
-  - openshift_facts
-  tasks:
-  - openshift_facts:
-      role: "{{ item.role }}"
-      local_facts: "{{ item.local_facts }}"
+  - yum:
+      name: "{{ item }}"
+      state: present
     with_items:
-      - role: common
-        local_facts:
-          is_containerized: "{{ containerized }}"
-          use_openshift_sdn: "{{ openshift_use_openshift_sdn }}"
-          sdn_network_plugin_name: "{{ os_sdn_network_plugin_name }}"
-          use_dnsmasq: "{{ openshift_use_dnsmasq }}"
-      - role: node
-        local_facts:
-          router_selector: "{{ openshift_hosted_router_selector }}"
-          registry_selector: "{{ openshift_hosted_registry_selector }}"
-      - role: node
-        local_facts:
-          schedulable: "{{ openshift_schedulable | default(openshift_scheduleable) | default(None) }}"
-          labels: "{{ lookup('oo_option', 'openshift_node_labels') | default( openshift_node_labels | default(none), true) }}"
-      - role: hosted
-        local_facts:
-          registry:
-            selector: "{{ openshift_hosted_registry_selector }}"
-          router:
-            selector: "{{ openshift_hosted_router_selector }}"
-          metrics:
-            selector: "{{ openshift_hosted_registry_selector }}"
-            storage_host: "nas.{{ openshift_domain }}"
-            storage:
-              host: "nas.{{ openshift_domain }}"
+    - python-pip
+  - pip:
+      name: "{{ item }}"
+      state: present
+    with_items:
+    - boto3
+    - botocore
+    - passlib
+
+- import_playbook: openshift-ansible/playbooks/byo/openshift-cluster/initialize_groups.yml
+- import_playbook: openshift-ansible/playbooks/common/openshift-cluster/evaluate_groups.yml
 
 - hosts: oo_masters_to_config
   tags: master
@@ -80,7 +77,7 @@
     - /etc/origin/master
     when: prep_master.stat.exists == False
   - name: Get a list of existing master configs
-    s3:
+    aws_s3:
       bucket: "datastore.{{ openshift_domain }}"
       region: "{{ aws_region }}"
       prefix: config/master
@@ -88,7 +85,7 @@
       mode: list
     register: existing_master_config
   - name: Download existing master configs from S3
-    s3:
+    aws_s3:
       bucket: "datastore.{{ openshift_domain }}"
       region: "{{ aws_region }}"
       object: "/config/master/{{ item | basename }}"
@@ -98,42 +95,48 @@
     - "{{ existing_master_config.s3_keys }}"
     when: prep_master.stat.exists == False
 
-- include: openshift-ansible/playbooks/aws/openshift-cluster/config.yml
-  vars:
-    openshift_cluster_id: "{{ cluster_id }}"
-    openshift_deployment_type: "{{ deployment_type }}"
-    openshift_master_cluster_method: "{{ lookup('oo_option', 'openshift_master_cluster_method') }}"
-    openshift_hosted_registry_selector: 'svc=infra'
-    openshift_hosted_router_selector: 'svc=router'
-    openshift_use_openshift_sdn: "{{ lookup('oo_option', 'use_openshift_sdn') }}"
-    os_sdn_network_plugin_name: "{{ lookup('oo_option', 'sdn_network_plugin_name') }}"
-    openshift_use_dnsmasq: "{{ lookup('oo_option', 'openshift_use_dnsmasq') }}"
-    openshift_node_labels:
-      region: "{{ hostvars[inventory_hostname]['ec2_tag_region'] }}"
-      type: "{{ hostvars[inventory_hostname]['ec2_tag_sub-host-type'] }}"
-      svc: "{{ hostvars[inventory_hostname]['ec2_tag_svc'] }}"
-      process_type: "{{ hostvars[inventory_hostname]['ec2_tag_process-type'] | default(hostvars[inventory_hostname]['ec2_tag_svc']) }}"
-
-- hosts: oo_nodes_to_config
+- hosts: oo_etcd_to_config
+  tags: etcd
   tasks:
-  - openshift_facts:
-      role: node
-      local_facts:
-        schedulable: false
-    when: openshift_node_labels.svc == "master" or openshift_node_labels.svc == "router"
-  - command: >
-      {{ openshift.common.client_binary }} adm manage-node --schedulable=false --selector='svc=infra'
-    ignore_errors: yes
-    delegate_to: "{{ groups.oo_masters_to_config.0 }}"
-  - command: >
-      {{ openshift.common.client_binary }} adm manage-node --schedulable=false --selector='svc=router'
-    ignore_errors: yes
-    delegate_to: "{{ groups.oo_masters_to_config.0 }}"
+  - name: Check if etcd node is already configured
+    stat:
+      path: /etc/etcd
+    register: prep_etcd
+  - file:
+      path: "{{ item }}"
+      state: directory
+      mode: 0750
+      owner: root
+      group: root
+    with_items:
+    - /etc/etcd
+    when: prep_etcd.stat.exists == False
+  - name: Get a list of existing etcd configs
+    aws_s3:
+      bucket: "datastore.{{ openshift_domain }}"
+      region: "{{ aws_region }}"
+      prefix: config/etcd
+      marker: config/etcd
+      mode: list
+    register: existing_etcd_config
+  - name: Download existing etcd configs from S3
+    aws_s3:
+      bucket: "datastore.{{ openshift_domain }}"
+      region: "{{ aws_region }}"
+      object: "/config/etcd/{{ item | basename }}"
+      dest: "/etc/etcd/{{ item | basename}}"
+      mode: get
+    with_items:
+    - "{{ existing_etcd_config.s3_keys }}"
+    when: prep_etcd.stat.exists == False
+
+- import_playbook: openshift-ansible/playbooks/byo/openshift-cluster/config.yml
+  tags: always
 
 - hosts: oo_first_master
   tags: master
   tasks:
-  - name: Copy configs to S3 bucket
+  - name: Copy master configs to S3 bucket
     s3:
       bucket: "datastore.{{ openshift_domain }}"
       region: "{{ aws_region }}"
@@ -144,120 +147,47 @@
     - admin.crt
     - admin.key
     - admin.kubeconfig
+    - aggregator-front-proxy.crt
+    - aggregator-front-proxy.key
+    - aggregator-front-proxy.kubeconfig
     - ca-bundle.crt
     - ca.crt
     - ca.key
     - ca.serial.txt
-    - master-config.yaml
+    - client-ca-bundle.crt
+    - etcd.server.crt
+    - etcd.server.key
+    - front-proxy-ca.crt
+    - frontproxy-ca.crt
+    - front-proxy-ca.key
+    - frontproxy-ca.key
+    - frontproxy-ca.serial.txt
     - master.etcd-ca.crt
-    - master.etcd-client.crt
-    - master.etcd-client.csr
-    - master.etcd-client.key
     - master.kubelet-client.crt
     - master.kubelet-client.key
     - master.proxy-client.crt
     - master.proxy-client.key
-    - openshift-master.kubeconfig
-    - registry.crt
-    - registry.key
+    - openshift-aggregator.crt
+    - openshift-aggregator.key
     - serviceaccounts.private.key
     - serviceaccounts.public.key
     - service-signer.crt
     - service-signer.key
-    - session-secrets.yaml
-
-- hosts: oo_masters_to_config
-  tags: master
-  vars:
-    master_files:
-    - /etc/origin/master/ca.serial.txt
-    - /etc/origin/generated-configs
-    - /etc/origin/hosted
-  tasks:
-  - name: Create local temp directory for syncing master_files
-    command: mktemp -d /tmp/master_files-XXXXXXX
-    become: no
-    register: master_mktemp
-    delegate_to: localhost
-  - name: Create a gzip of master_files
-    command: >
-      tar -czvf /tmp/master_files.tgz {{ master_files | join(" ") }}
-    args:
-      warn: no
-    delegate_to: "{{ groups.oo_masters_to_config.0 }}"
-  - name: Retrieve master_files.tgz
-    fetch:
-      src: /tmp/master_files.tgz
-      dest: "{{ master_mktemp.stdout }}/master_files.tgz"
-      flat: yes
-      validate_checksum: yes
-    delegate_to: "{{ groups.oo_masters_to_config.0 }}"
-  - name: Copy master_files to g_master_hosts
-    copy:
-      src: "{{ master_mktemp.stdout }}/master_files.tgz"
-      dest: /tmp/master_files.tgz
-      force: yes
-  - name: Unarhive master_files
-    command: >
-      tar -xzvf /tmp/master_files.tgz -C /
-    args:
-      warn: no
-  - name: Delete temp master_files.tgz
-    file:
-      path: /tmp/master_files.tgz
-      state: absent
-  - name: Delete temp master_files.tgz
-    file:
-      path: "{{ master_mktemp.stdout }}"
-      state: absent
-    delegate_to: localhost
 
 - hosts: oo_etcd_to_config
   tags: etcd
-  vars:
-    etcd_files:
-    - /etc/etcd/ca
-    - /etc/etcd/generated_certs
   tasks:
-  - name: Create local temp directory for syncing etcd_files
-    command: mktemp -d /tmp/etcd_files-XXXXXXX
-    become: no
-    register: etcd_mktemp
-    delegate_to: localhost
-  - name: Create a gzip of etcd_files
-    command: >
-      tar -czvf /tmp/etcd_files.tgz {{ etcd_files | join(" ")  }}
-    args:
-      warn: no
-    delegate_to: "{{ groups.oo_etcd_to_config.0 }}"
-  - name: Retrieve etcd_files.tgz
-    fetch:
-      src: /tmp/etcd_files.tgz
-      dest: "{{ etcd_mktemp.stdout }}/etcd_files.tgz"
-      flat: yes
-      validate_checksum: yes
-    delegate_to: "{{ groups.oo_etcd_to_config.0 }}"
-  - name: Copy etcd_files to g_etcd_hosts
-    copy:
-      src: "{{ etcd_mktemp.stdout }}/etcd_files.tgz"
-      dest: /tmp/etcd_files.tgz
-      force: yes
-  - name: Unarhive etcd_files
-    command: >
-      tar -xzvf /tmp/etcd_files.tgz -C /
-    args:
-      warn: no
-  - name: Delete temp etcd_files.gz
-    file:
-      path: /tmp/etcd_files.tgz
-      state: absent
-  - name: Delete temp etcd_files.gz
-    file:
-      path: "{{ etcd_mktemp.stdout }}"
-      state: absent
-    delegate_to: localhost
+  - name: Copy etcd configs to S3 bucket
+    s3:
+      bucket: "datastore.{{ openshift_domain }}"
+      region: "{{ aws_region }}"
+      object: "/config/etcd/{{ item }}"
+      src: "/etc/etcd/{{ item }}"
+      mode: put
+    with_items:
+    - ca.crt
 
-- hosts: l_oo_all_hosts
+- hosts: oo_all_hosts
   gather_facts: no
   tags: always
   tasks:
