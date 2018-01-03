@@ -45,12 +45,12 @@
       state: touch
   - yum:
       name: "{{ item }}"
-      state: present
+      state: latest
     with_items:
     - python-pip
   - pip:
       name: "{{ item }}"
-      state: present
+      state: latest
     with_items:
     - boto3
     - botocore
