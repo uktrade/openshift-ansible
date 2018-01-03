@@ -8,7 +8,7 @@ openshift_deployment_type: origin
 docker_upgrade: true
 docker_storage_driver: devicemapper
 openshift_docker_additional_registries: registry.access.redhat.com
-openshift_disable_check: docker_image_availability,docker_storage
+openshift_disable_check: memory_availability,docker_image_availability,docker_storage
 
 openshift_clock_enabled: true
 openshift_use_openshift_sdn: true
