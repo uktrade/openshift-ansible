@@ -137,7 +137,7 @@
   tags: master
   tasks:
   - name: Copy master configs to S3 bucket
-    s3:
+    aws_s3:
       bucket: "datastore.{{ openshift_domain }}"
       region: "{{ aws_region }}"
       object: "/config/master/{{ item }}"
@@ -173,6 +173,7 @@
     - serviceaccounts.public.key
     - service-signer.crt
     - service-signer.key
+    ignore_errors: yes
 
 - hosts: oo_etcd_to_config
   tags: etcd
